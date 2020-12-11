@@ -1,0 +1,576 @@
+import { ElementFinder, element, by, browser, ElementArrayFinder } from "protractor";
+import { Then } from "cucumber";
+import { PropertiesFileManager } from "../Utility/PropertiesFileManager";
+var prop = new PropertiesFileManager();
+let headerActualArray = new Array();
+let headerExpectedArray = new Array();
+export class LinksPage {
+
+    tableCount: ElementArrayFinder;
+    recordTypeBtn: ElementFinder;
+    recordListCheckBox: ElementArrayFinder;
+    applyButton: ElementFinder;
+    cancelButton: ElementFinder;
+    recordListTable: ElementArrayFinder;
+    contentListTable: ElementArrayFinder;
+    recordTypeDDeselectBtn: ElementFinder;
+    contentTypeBtn:ElementFinder
+    contentTypeDDeselectBtn:ElementFinder;
+    statusTypeBtn:ElementFinder;
+    statusTypeDDeselectBtn:ElementFinder;
+    menuButton:ElementFinder;
+    homeButton:ElementFinder;
+    homePageVersion:ElementFinder;
+    constructor() {
+        this.homeButton = element(by.xpath("//div[contains(@class,'mat-drawer-inner-container')]//*[name()='mat-nav-list' ]//*[name()='mat-list-item'][1]//div[2]/a/span"));
+        this.menuButton=element(by.xpath("//*[name()='mat-toolbar-row']//div/button/i"));
+        this.tableCount = element.all(by.xpath("//table//tr"))
+        //this.recordTypeBtn = element(by.xpath("//*[@class = 'control']//*[name()='app-filter-button'][3]/button/span"));
+        //this.recordTypeDDeselectBtn = element(by.xpath("//*[@class = 'control']//*[name()='app-filter-button'][3]/button"));
+         
+        this.recordTypeBtn =element(by.xpath("//*[@id ='recordTypes']/button/span"));
+        this.recordTypeDDeselectBtn = element(by.xpath("//*[@id= 'recordTypes']/button"));
+
+        this.recordListCheckBox = element.all(by.xpath("//*[@class = 'checkboxes']//li"));
+        this.applyButton = element(by.xpath("//*[@type= 'submit']"));
+        this.cancelButton = element(by.xpath("//*[@class='app-button'][1]"));
+        this.recordListTable = element.all(by.xpath("//table//tr//td[4]"));
+        this.contentListTable = element.all(by.xpath("//table//tr//td[6]"));
+
+
+        this.homePageVersion=element(by.xpath("//*[name()='app-version-label']//*[@class='version-info']"));
+        //this.contentTypeBtn = element(by.xpath("//*[@class = 'control']//*[name()='app-filter-button'][2]/button/span"));
+        this.contentTypeBtn =element(by.xpath("//*[@id ='contentTypes']/button/span"));
+        //this.contentTypeDDeselectBtn = element(by.xpath("//*[@class = 'control']//*[name()='app-filter-button'][2]/button"));
+        this.contentTypeDDeselectBtn = element(by.xpath("//*[@id= 'contentTypes']/button"));
+        
+       // this.statusTypeBtn = element(by.xpath("//*[@class = 'control']//*[name()='app-filter-button'][1]/button/span"));
+       this.statusTypeBtn = element(by.xpath("//*[@id ='recordStatus']/button/span"));
+       // this.statusTypeDDeselectBtn = element(by.xpath("//*[@class = 'control']//*[name()='app-filter-button'][1]/button"));
+       this.statusTypeDDeselectBtn = element(by.xpath("//*[@id= 'recordStatus']/button"));
+
+    }
+
+
+    public async verifyOnLinkPage() {
+        return true;
+    }
+
+    public async compareHeaderNames() {
+        let missing = headerActualArray.filter(item => headerExpectedArray.indexOf(item) < 0);
+        console.log("missing len",missing.length);
+        if (missing.length == 0) {
+            return true;
+        }
+        else {
+            return false;
+        }
+    }
+
+    public async getTheColumnNames() {
+        try {
+            var value = await this.tableCount.all(by.tagName("th")).count();
+            console.log(value);
+
+
+            var headerNames = prop.GetPropertyValue("LINKS_HEADER_NAMES");
+            let eachHeaderNames = headerNames.split(",");
+            for (var i = 0; i < eachHeaderNames.length; i++) {
+                headerExpectedArray[i] = eachHeaderNames[i].trim();
+
+            }
+
+            var cells = this.tableCount.all(by.tagName("th"));
+            for (var i = 1; i <= value; i++) {
+                let textname = await element(by.xpath("//table//tr//th[" + i + "]" + "//div/button/a[1]")).getText();
+                headerActualArray[i] = textname.trim();
+            }
+
+
+            
+            return true;
+        }
+        catch (e) {
+            return false;
+        }
+    }
+
+    public async clickAndSelectRecordType() {
+        console.log("Click on status Type and sleect Status");
+        try {
+            await this.recordTypeBtn.click().then(function () {
+                console.log("status List");
+            });
+            let lengthValue = await this.recordListCheckBox.count();
+            console.log("record Type Count", lengthValue);
+
+            for (let i = 1; i <= lengthValue; i++) {
+                let textname = await element(by.xpath("//*[@class = 'checkboxes']//li[" + i + "]//label")).getText();
+
+                if (textname.trim() == prop.GetPropertyValue("LINKS_RECORD_TYPE").trim()) {
+
+                    await element(by.xpath("//*[@class = 'checkboxes']//li[" + i + "]" + "//label/input")).click();
+                }
+            }
+            await this.applyButton.click().then(function () {
+                browser.sleep(Number(prop.GetPropertyValue("MEDIUM_DELAY")));
+            })
+        }
+        catch (Exception) {
+            console.log("Exception accoured");
+            return false;
+        }
+        return true;
+    }
+
+
+    public async verifyDisplayBasedRecordType() {
+        browser.sleep(Number(prop.GetPropertyValue("MEDIUM_DELAY")));
+        console.log("Checking display Based on reocrd type");
+        let checkCount = 0;
+        let lengthValue = await this.recordListTable.count();
+        console.log("record Type Table  Count", lengthValue);
+
+        for (let i = 1; i <= lengthValue; i++) {
+            let textname = await element(by.xpath("//table//tr[" + i + "]//td[4]")).getText();
+            if (textname.trim() == prop.GetPropertyValue("LINKS_RECORD_TYPE").trim()) {
+                checkCount = checkCount + 1;
+            }
+        }
+
+        if (checkCount == lengthValue) {
+            return true;
+        }
+        else {
+            return false;
+        }
+
+
+    }
+
+    public async deselectSelectedOptionClickApply() {
+        try {
+            console.log("deslect the seleted options");
+            browser.sleep(Number(prop.GetPropertyValue("MEDIUM_DELAY")));
+            await this.recordTypeDDeselectBtn.click().then(function () {
+                console.log(" des select status status List");
+            });
+
+            let lengthValue = await this.recordListCheckBox.count();
+            console.log("record Type Count", lengthValue);
+
+            for (let i = 1; i <= lengthValue; i++) {
+                let textname = await element(by.xpath("//*[@class = 'checkboxes']//li[" + i + "]//label/input")).isSelected();
+
+                if (textname == true) {
+
+                    await element(by.xpath("//*[@class = 'checkboxes']//li[" + i + "]" + "//label/input")).click();
+                }
+            }
+            await this.applyButton.click().then(function () {
+                browser.sleep(Number(prop.GetPropertyValue("MEDIUM_DELAY")));
+            });
+
+            return true;
+
+        }
+        catch (Exception) {
+            return false;
+        }
+    }
+
+    public async verifyForAllData() {
+        console.log("Checking display All reord Type");
+        let checkCount = 0;
+        browser.sleep(Number(prop.GetPropertyValue("MEDIUM_DELAY")));
+        let lengthValue = await this.recordListTable.count();
+        console.log("record Type Table  Count-------", lengthValue);
+        console.log("record Type Table  Count",typeof lengthValue);
+        if (Number(lengthValue) > 0) {
+            console.log("its true");
+            return true;
+        }
+        else {
+            console.log("its false");
+            return false;
+        }
+
+    }
+
+    public async selectRecordTypeForCancel(){
+        console.log("Click on Reocrd Type and sleect Reocrd for cancel");
+        try {
+            await this.recordTypeBtn.click().then(function () {
+                console.log("status List");
+            });
+            let lengthValue = await this.recordListCheckBox.count();
+            console.log("record Type Count", lengthValue);
+
+            for (let i = 1; i <= lengthValue; i++) {
+                let textname = await element(by.xpath("//*[@class = 'checkboxes']//li[" + i + "]//label")).getText();
+
+                if (textname.trim() == prop.GetPropertyValue("LINKS_RECORD_TYPE").trim()) {
+
+                    await element(by.xpath("//*[@class = 'checkboxes']//li[" + i + "]" + "//label/input")).click();
+                }
+            }
+            await this.cancelButton.click().then(function () {
+                browser.sleep(Number(prop.GetPropertyValue("MEDIUM_DELAY")));
+            })
+        }
+        catch (Exception) {
+            console.log("Exception accoured");
+            return false;
+        }
+        return true;
+    }
+
+    public async clickOnRecordTypeForCancel(){
+        try {
+           
+            console.log("verify ReordType For Cancel");
+            browser.sleep(Number(prop.GetPropertyValue("MEDIUM_DELAY")));
+            await this.recordTypeDDeselectBtn.click().then(function () {
+                console.log(" des ReordType For Cancel ");
+            });         
+          return true;
+        }
+        catch (Exception) {
+            return false;
+        }
+    }
+
+    public async verifyRecordTypeForCancel(){
+        let selectedCount = 0;
+        let lengthValue = await this.recordListCheckBox.count();
+        console.log("record Type Count for cancel ", lengthValue);
+
+        for (let i = 1; i <= lengthValue; i++) {
+            let textname = await element(by.xpath("//*[@class = 'checkboxes']//li[" + i + "]//label/input")).isSelected();
+
+            if (textname == true) {
+
+                selectedCount = selectedCount +1;
+            }
+        }
+
+
+        await this.cancelButton.click().then(function () {
+            browser.sleep(Number(prop.GetPropertyValue("MEDIUM_DELAY")));
+        });
+       
+        if(selectedCount == 0){
+            return true;
+        }
+        else{
+            return false;
+        }
+    }
+
+
+    public async clickAndSelectContactType() {
+        console.log("Click on Contact Type and sleect Status");
+        try {
+            await this.contentTypeBtn.click().then(function () {
+                console.log("status List");
+            });
+            let lengthValue = await this.recordListCheckBox.count();
+            console.log("contact Type Count", lengthValue);
+
+            for (let i = 1; i <= lengthValue; i++) {
+                let textname = await element(by.xpath("//*[@class = 'checkboxes']//li[" + i + "]//label")).getText();
+                console.log(prop.GetPropertyValue("LINKS_CONTACT_TYPE").trim())
+                console.log(textname.trim())
+                if (textname.trim() == prop.GetPropertyValue("LINKS_CONTACT_TYPE").trim()) {
+
+                    await element(by.xpath("//*[@class = 'checkboxes']//li[" + i + "]" + "//label/input")).click();
+                }
+            }
+            await this.applyButton.click().then(function () {
+                browser.sleep(Number(prop.GetPropertyValue("MEDIUM_DELAY")));
+            })
+        }
+        catch (Exception) {
+            console.log("Exception accoured");
+            return false;
+        }
+        return true;
+    }
+
+    public async verifyDisplayBasedContentType() {
+        browser.sleep(Number(prop.GetPropertyValue("MEDIUM_DELAY")));
+        console.log("Checking display Based on content type");
+        let checkCount = 0;
+        let lengthValue = await this.contentListTable.count();
+        console.log("content Type Table  Count", lengthValue);
+
+        for (let i = 1; i <= lengthValue; i++) {
+            let textname = await element(by.xpath("//table//tr[" + i + "]//td[5]")).getText();
+            if (textname.trim() == prop.GetPropertyValue("LINKS_DISPLAY_TYPE").trim()) {
+                checkCount = checkCount + 1;
+            }
+        }
+        console.log("content Type Table  Count,checkCount ", checkCount);
+        if (checkCount == lengthValue) {
+            return true;
+        }
+        else {
+            return false;
+        }
+
+
+    }
+
+
+
+    public async deselectSelectedContentOptionClickApply() {
+        try {
+            console.log("deslect the seleted options for content");
+            browser.sleep(Number(prop.GetPropertyValue("MEDIUM_DELAY")));
+            await this.contentTypeDDeselectBtn.click().then(function () {
+                console.log(" des select status status List");
+            });
+
+            let lengthValue = await this.recordListCheckBox.count();
+            console.log("record Type Count", lengthValue);
+
+            for (let i = 1; i <= lengthValue; i++) {
+                let textname = await element(by.xpath("//*[@class = 'checkboxes']//li[" + i + "]//label/input")).isSelected();
+
+                if (textname == true) {
+
+                    await element(by.xpath("//*[@class = 'checkboxes']//li[" + i + "]" + "//label/input")).click();
+                }
+            }
+            await this.applyButton.click().then(function () {
+                browser.sleep(Number(prop.GetPropertyValue("MEDIUM_DELAY")));
+            });
+
+            return true;
+
+        }
+        catch (Exception) {
+            return false;
+        }
+    }
+
+
+    public async selectContentTypeForCancel(){
+        console.log("Click on content Type and sleect Reocrd for cancel");
+        try {
+            await this.contentTypeBtn.click().then(function () {
+                console.log("status List");
+            });
+            let lengthValue = await this.recordListCheckBox.count();
+            console.log("record Type Count", lengthValue);
+
+            for (let i = 1; i <= lengthValue; i++) {
+                let textname = await element(by.xpath("//*[@class = 'checkboxes']//li[" + i + "]//label")).getText();
+
+                if (textname.trim() == prop.GetPropertyValue("LINKS_RECORD_TYPE").trim()) {
+
+                    await element(by.xpath("//*[@class = 'checkboxes']//li[" + i + "]" + "//label/input")).click();
+                }
+            }
+            await this.cancelButton.click().then(function () {
+                browser.sleep(Number(prop.GetPropertyValue("MEDIUM_DELAY")));
+            })
+        }
+        catch (Exception) {
+            console.log("Exception accoured");
+            return false;
+        }
+        return true;
+    }
+
+    public async clickOnContentTypeForCancel(){
+        try {
+           
+            console.log("verify Content For Cancel");
+            browser.sleep(Number(prop.GetPropertyValue("MEDIUM_DELAY")));
+            await this.contentTypeDDeselectBtn.click().then(function () {
+                console.log(" des ReordType For Cancel ");
+            });         
+          return true;
+        }
+        catch (Exception) {
+            return false;
+        }
+    }
+
+
+
+    public async clickAndSelectStatusType() {
+        console.log("Click on Status Type and sleect Status");
+        try {
+            await this.statusTypeBtn.click().then(function () {
+                console.log("status List");
+            });
+            let lengthValue = await this.recordListCheckBox.count();
+            console.log("status Type Count", lengthValue);
+
+            for (let i = 1; i <= lengthValue; i++) {
+                let textname = await element(by.xpath("//*[@class = 'checkboxes']//li[" + i + "]//label")).getText();
+                console.log(prop.GetPropertyValue("LINKS_STATUS_TYPE").trim())
+                console.log(textname.trim())
+                if (textname.trim() == prop.GetPropertyValue("LINKS_STATUS_TYPE").trim()) {
+
+                    await element(by.xpath("//*[@class = 'checkboxes']//li[" + i + "]" + "//label/input")).click();
+                }
+            }
+            await this.applyButton.click().then(function () {
+                browser.sleep(10000);
+            })
+        }
+        catch (Exception) {
+            console.log("Exception accoured");
+            return false;
+        }
+        return true;
+    }
+
+
+    public async verifyDisplayBasedStatusType() {
+        browser.sleep(Number(prop.GetPropertyValue("MEDIUM_DELAY")));
+        console.log("Checking display Based on status type");
+        let checkCount = 0;
+        let lengthValue = await this.contentListTable.count();
+        console.log("status Type Table  Count", lengthValue);
+
+        for (let i = 1; i <= lengthValue; i++) {
+            let textname = await element(by.xpath("//table//tr[" + i + "]//td[6]")).getText();
+            if (textname.trim() == prop.GetPropertyValue("LINKS_STATUS_TYPE").trim()) {
+                checkCount = checkCount + 1;
+            }
+        }
+
+        if (checkCount == lengthValue) {
+            return true;
+        }
+        else {
+            return false;
+        }
+
+
+    }
+
+
+    public async deselectSelectedStatusOptionClickApply() {
+        try {
+            console.log("deslect the seleted status options");
+            browser.sleep(Number(prop.GetPropertyValue("MEDIUM_DELAY")));
+            await this.statusTypeDDeselectBtn.click().then(function () {
+                console.log(" des select status status List");
+            });
+
+            let lengthValue = await this.recordListCheckBox.count();
+            console.log("record Type Count", lengthValue);
+
+            for (let i = 1; i <= lengthValue; i++) {
+                let textname = await element(by.xpath("//*[@class = 'checkboxes']//li[" + i + "]//label/input")).isSelected();
+
+                if (textname == true) {
+
+                    await element(by.xpath("//*[@class = 'checkboxes']//li[" + i + "]" + "//label/input")).click();
+                }
+            }
+            await this.applyButton.click().then(function () {
+                browser.sleep(Number(prop.GetPropertyValue("MEDIUM_DELAY")));
+            });
+
+            return true;
+
+        }
+        catch (Exception) {
+            return false;
+        }
+    }
+
+
+    public async selectStatusTypeForCancel(){
+        console.log("Click on content Type and sleect Reocrd for cancel");
+        try {
+            await this.statusTypeBtn.click().then(function () {
+                console.log("status List");
+            });
+            let lengthValue = await this.recordListCheckBox.count();
+            console.log("record Type Count", lengthValue);
+
+            for (let i = 1; i <= lengthValue; i++) {
+                let textname = await element(by.xpath("//*[@class = 'checkboxes']//li[" + i + "]//label")).getText();
+
+                if (textname.trim() == prop.GetPropertyValue("LINKS_STATUS_TYPE").trim()) {
+
+                    await element(by.xpath("//*[@class = 'checkboxes']//li[" + i + "]" + "//label/input")).click();
+                }
+            }
+            await this.cancelButton.click().then(function () {
+                browser.sleep(Number(prop.GetPropertyValue("MEDIUM_DELAY")));
+            })
+        }
+        catch (Exception) {
+            console.log("Exception accoured");
+            return false;
+        }
+        return true;
+    }
+
+    public async clickOnStatusTypeForCancel(){
+        try {
+           
+            console.log("verify Content For Cancel");
+            browser.sleep(Number(prop.GetPropertyValue("MEDIUM_DELAY")));
+            await this.statusTypeDDeselectBtn.click().then(function () {
+                console.log(" des ReordType For Cancel ");
+            });         
+          return true;
+        }
+        catch (Exception) {
+            return false;
+        }
+    }
+
+
+    public async clickOnHome(){
+        try{
+            let returnResult = await this.menuButton.click().then(function(){
+                browser.sleep(Number(prop.GetPropertyValue("SMALL_DELAY")));
+                console.log("click on menu button  from Link Page")
+                 return true;
+                
+              });
+            if(returnResult == true){
+                this.homeButton.click().then(function(){
+                    console.log("click on Home button ")
+                  
+                });
+            }
+              return returnResult;
+        }
+        catch(e){
+            console.log(e);
+            return false;
+        }
+    }
+    public async verifyUserInHomePage(){
+        try{
+            let result = false;
+            browser.sleep(Number(prop.GetPropertyValue("SMALL_DELAY")));
+          await this.homePageVersion.getText().then(function(text){
+              console.log("text",text);
+            if((text.trim()).includes(prop.GetPropertyValue("VERSION_INFO").trim())){
+                console.log("version matches")
+                result =  true;
+            }
+            else{
+                result = false;
+            }
+          });
+          return  result;
+        }
+        catch(e){
+            console.log(e);
+            return false;
+        }
+    }
+}

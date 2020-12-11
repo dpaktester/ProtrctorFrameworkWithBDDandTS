@@ -1,0 +1,39 @@
+{
+  "name": "pheonixframework",
+  "version": "1.0.0",
+  "description": "",
+  "main": "index.js",
+  "scripts": {
+    "test": "protractor JSFiles/Configuration.js",
+    "cucumbertest": "protractor JSFiles/CucumberConfig.js --cucumberOpts.tags=@SPEC-SMOKE",
+    "regressiontest": "protractor JSFiles/RegressionConfig.js",
+    "Level2Test": "protractor JSFiles/RegressionConfig.js --cucumberOpts.tags=@SPEC-Level2",
+    "pretest": "tsc",
+    "protractor": "./node_modules/protractor/built/cli.js",
+    "webdriver-update": "./node_modules/.bin/webdriver-manager update"
+  },
+  "author": "",
+  "license": "ISC",
+  "dependencies": {
+    "@types/chai": "^4.2.11",
+    "@types/cucumber": "^6.0.1",
+    "@types/jasmine": "^3.5.10",
+    "@types/jasminewd2": "^2.0.8",
+    "@types/node": "^13.11.0",
+    "chai": "^4.2.0",
+    "chai-as-promised": "^7.1.1",
+    "core-js": "^2.6.5",
+    "crypto-js": "^4.0.0",
+    "cryptr": "^6.0.2",
+    "cucumber": "^6.0.5",
+    "cucumber-html-reporter": "^5.2.0",
+    "jasmine": "^3.5.0",
+    "log4js": "^6.2.0",
+    "log4js-protractor-appender": "^1.1.2",
+    "properties-reader": "^1.0.0",
+    "protractor": "^5.4.3",
+    "protractor-cucumber-framework": "^6.2.1",
+    "ts-node": "^8.8.1",
+    "typescript": "^3.8.3"
+  }
+}
