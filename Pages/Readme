@@ -1,0 +1,9 @@
+This Framework is designed usig Protractor framework.
+The password is encrypted using Crypto plugin in login.ts page.
+All the controls to run a particular script is given by config files (e.g. ReressionConifig).
+All the path and dependancies were given in package.json file.
+Use TSC to convert all the type script code to java script code.
+To run a particular file use below code where @ is the type of script which you are running.
+protractor JSFiles/CucumberConfig.js --cucumberOpts.tags=@SPEC-SMOKE
+To run the entire module type npm run cucumbertest(This is provided in package.json file) in cmd after going to the project folder
+And all the run configuartions were written within scripts in package.json
